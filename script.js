@@ -87,7 +87,7 @@ const state = {
   predictionHistory: [],
   charts: {},
   units: 'metric',
-  table: { search: '', sortKey: 'date', sortDir: 'desc', page: 1, pageSize: 15 },
+  table: { search: '', city: 'all', panel: 'all', sortKey: 'date', sortDir: 'desc', page: 1, pageSize: 15 },
   filters: { city: 'all', panel: 'all', season: 'all' },
 };
 
@@ -797,6 +797,8 @@ function renderPanels() {
    ============================================================ */
 function getTableRows() {
   let rows = state.records.filter(r => {
+    if (state.table.city !== 'all' && r.city !== state.table.city) return false;
+    if (state.table.panel !== 'all' && r.panel !== state.table.panel) return false;
     const q = state.table.search.toLowerCase();
     if (!q) return true;
     return `${r.city} ${r.panel} ${r.mount} ${r.season}`.toLowerCase().includes(q);
@@ -866,6 +868,8 @@ function renderPagination(totalPages) {
 
 function initTableControls() {
   document.getElementById('table-search').addEventListener('input', (e) => { state.table.search = e.target.value; state.table.page = 1; renderHistoricalTable(); });
+  document.getElementById('table-filter-city').addEventListener('change', (e) => { state.table.city = e.target.value; state.table.page = 1; renderHistoricalTable(); });
+  document.getElementById('table-filter-panel').addEventListener('change', (e) => { state.table.panel = e.target.value; state.table.page = 1; renderHistoricalTable(); });
   document.getElementById('table-page-size').addEventListener('change', (e) => { state.table.pageSize = parseInt(e.target.value); state.table.page = 1; renderHistoricalTable(); });
   document.querySelectorAll('.data-table th').forEach(th => {
     th.addEventListener('click', () => {
@@ -898,18 +902,22 @@ function renderGauge(id, opts) {
 
 function renderPerformance() {
   const gauges = [
-    { id: 'gauge-1', label: 'Model Accuracy', sub: 'R² Score (test set)', display: `${(MODEL_METRICS.rf.r2 * 100).toFixed(1)}%`, fillPct: MODEL_METRICS.rf.r2 * 100, color: COLORS.orange },
-    { id: 'gauge-2', label: 'Mean Abs. Error', sub: 'MAE (kWh/day)', display: `${MODEL_METRICS.rf.mae}`, fillPct: (1 - MODEL_METRICS.rf.mae / 1.2) * 100, color: COLORS.green },
-    { id: 'gauge-3', label: 'Root Mean Sq. Error', sub: 'RMSE (kWh/day)', display: `${MODEL_METRICS.rf.rmse}`, fillPct: (1 - MODEL_METRICS.rf.rmse / 1.5) * 100, color: COLORS.blue },
-    { id: 'gauge-4', label: 'Cross-Validated R²', sub: '5-Fold CV mean', display: `${(MODEL_METRICS.rf.r2cv * 100).toFixed(1)}%`, fillPct: MODEL_METRICS.rf.r2cv * 100, color: COLORS.yellow },
+    { id: 'gauge-1', label: 'Model Accuracy', sub: 'R² Score (test set)', value: MODEL_METRICS.rf.r2 * 100, decimals: 1, suffix: '%', fillPct: MODEL_METRICS.rf.r2 * 100, color: COLORS.orange },
+    { id: 'gauge-2', label: 'Mean Abs. Error', sub: 'MAE (kWh/day)', value: MODEL_METRICS.rf.mae, decimals: 3, suffix: '', fillPct: (1 - MODEL_METRICS.rf.mae / 1.2) * 100, color: COLORS.green },
+    { id: 'gauge-3', label: 'Root Mean Sq. Error', sub: 'RMSE (kWh/day)', value: MODEL_METRICS.rf.rmse, decimals: 3, suffix: '', fillPct: (1 - MODEL_METRICS.rf.rmse / 1.5) * 100, color: COLORS.blue },
+    { id: 'gauge-4', label: 'Cross-Validated R²', sub: '5-Fold CV mean', value: MODEL_METRICS.rf.r2cv * 100, decimals: 1, suffix: '%', fillPct: MODEL_METRICS.rf.r2cv * 100, color: COLORS.yellow },
   ];
   document.getElementById('gauge-grid').innerHTML = gauges.map(g => `
     <div class="glass-card gauge-card reveal in-view">
-      <div class="gauge-wrap"><canvas id="${g.id}"></canvas><div class="gauge-value"><b>${g.display}</b><span>${g.sub}</span></div></div>
+      <div class="gauge-wrap"><canvas id="${g.id}"></canvas><div class="gauge-value"><b><span id="${g.id}-num">0</span>${g.suffix ? `<em>${g.suffix}</em>` : ''}</b><span>${g.sub}</span></div></div>
       <div class="gauge-title">${g.label}</div>
     </div>
   `).join('');
-  gauges.forEach(g => renderGauge(g.id, g));
+  gauges.forEach((g, i) => {
+    renderGauge(g.id, g);
+    const numEl = document.getElementById(`${g.id}-num`);
+    setTimeout(() => countUp(numEl, g.value, { decimals: g.decimals, duration: 1300 }), i * 120);
+  });
 
   destroyChart('chartModelCompare');
   state.charts.chartModelCompare = new Chart(document.getElementById('chartModelCompare'), {

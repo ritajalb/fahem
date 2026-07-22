@@ -68,14 +68,14 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a href="#" class="nav-link active" data-page="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
-      <a href="#" class="nav-link" data-page="prediction"><i class="fa-solid fa-chart-line"></i><span>Prediction</span></a>
-      <a href="#" class="nav-link" data-page="analytics"><i class="fa-solid fa-chart-pie"></i><span>Analytics</span></a>
-      <a href="#" class="nav-link" data-page="weather"><i class="fa-solid fa-cloud-sun"></i><span>Weather</span></a>
-      <a href="#" class="nav-link" data-page="panels"><i class="fa-solid fa-bolt"></i><span>Solar Panels</span></a>
-      <a href="#" class="nav-link" data-page="history"><i class="fa-solid fa-calendar-days"></i><span>Historical Data</span></a>
-      <a href="#" class="nav-link" data-page="performance"><i class="fa-solid fa-gauge-high"></i><span>Performance</span></a>
-      <a href="#" class="nav-link" data-page="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+      <a href="#" class="nav-link active" data-page="dashboard" data-tooltip="Dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-link" data-page="prediction" data-tooltip="Prediction"><i class="fa-solid fa-chart-line"></i><span>Prediction</span></a>
+      <a href="#" class="nav-link" data-page="analytics" data-tooltip="Analytics"><i class="fa-solid fa-chart-pie"></i><span>Analytics</span></a>
+      <a href="#" class="nav-link" data-page="weather" data-tooltip="Weather"><i class="fa-solid fa-cloud-sun"></i><span>Weather</span></a>
+      <a href="#" class="nav-link" data-page="panels" data-tooltip="Solar Panels"><i class="fa-solid fa-bolt"></i><span>Solar Panels</span></a>
+      <a href="#" class="nav-link" data-page="history" data-tooltip="Historical Data"><i class="fa-solid fa-calendar-days"></i><span>Historical Data</span></a>
+      <a href="#" class="nav-link" data-page="performance" data-tooltip="Performance"><i class="fa-solid fa-gauge-high"></i><span>Performance</span></a>
+      <a href="#" class="nav-link" data-page="settings" data-tooltip="Settings"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -197,6 +197,7 @@
         <div class="section-heading reveal">
           <h3><i class="fa-solid fa-gauge"></i> Live Production Metrics</h3>
           <p>Real-time key performance indicators for today's forecast</p>
+          <div class="energy-flow"></div>
         </div>
         <div class="kpi-grid" id="kpi-grid"><!-- injected by JS --></div>
 
@@ -393,6 +394,7 @@
         <div class="section-heading reveal">
           <h3><i class="fa-solid fa-chart-column"></i> Analytics</h3>
           <p>Explore performance across cities, seasons and panel types</p>
+          <div class="energy-flow"></div>
         </div>
 
         <div class="filters-bar glass-card reveal">
@@ -498,6 +500,14 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="table-search" placeholder="Search city, panel type, mount..." />
             </div>
+            <select id="table-filter-city">
+              <option value="all">All Cities</option>
+              <option>Riyadh</option><option>Jeddah</option><option>Mecca</option><option>Medina</option><option>Dammam</option>
+            </select>
+            <select id="table-filter-panel">
+              <option value="all">All Panel Types</option>
+              <option>Monocrystalline</option><option>Polycrystalline</option><option>Thin-Film</option>
+            </select>
             <select id="table-page-size">
               <option value="10">10 / page</option>
               <option value="15" selected>15 / page</option>
@@ -537,6 +547,7 @@
         <div class="section-heading reveal">
           <h3><i class="fa-solid fa-gauge-high"></i> Model Performance</h3>
           <p>Random Forest Regressor &mdash; trained on weather, air-quality &amp; seasonal features</p>
+          <div class="energy-flow"></div>
         </div>
 
         <div class="gauge-grid" id="gauge-grid"><!-- injected --></div>

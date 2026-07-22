@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SolarIQ &mdash; Solar Panel Energy Prediction Dashboard</title>
+<meta name="description" content="AI-powered prediction and analysis of photovoltaic energy production." />
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23FDB813'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- LOADING SCREEN                                                -->
+<!-- ============================================================ -->
+<div id="loading-screen">
+  <div class="loader-ring-wrap">
+    <svg class="loader-ring" viewBox="0 0 120 120"><circle class="loader-ring-bg" cx="60" cy="60" r="52" /><circle class="loader-ring-fg" id="loader-ring-fg" cx="60" cy="60" r="52" /></svg>
+    <div class="loader-sun">
+      <div class="loader-core"></div>
+      <div class="loader-ray"></div>
+    </div>
+    <span class="loader-pct" id="loader-pct">0%</span>
+  </div>
+  <p class="loader-text">Initializing Solar Intelligence Platform<span class="dots"><span>.</span><span>.</span><span>.</span></span></p>
+  <div class="loader-bar"><div class="loader-bar-fill" id="loader-bar-fill"></div></div>
+</div>
+
+<!-- Ambient low-opacity solar landscape behind the whole app -->
+<div class="app-bg-scene" aria-hidden="true">
+  <div class="abs-sun"></div>
+  <div class="abs-mountains"></div>
+  <div class="abs-grid"></div>
+</div>
+
+<!-- Cursor glow -->
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ============================================================ -->
+<!-- APP SHELL                                                     -->
+<!-- ============================================================ -->
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark"><i class="fa-solid fa-solar-panel"></i></div>
+      <div class="brand-text">
+        <span class="brand-name">Solar<em>IQ</em></span>
+        <span class="brand-sub">Intelligence Platform</span>
+      </div>
+      <button class="sidebar-collapse-btn" id="sidebar-collapse-btn" aria-label="Collapse sidebar"><i class="fa-solid fa-angles-left"></i></button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active" data-page="dashboard"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-link" data-page="prediction"><i class="fa-solid fa-chart-line"></i><span>Prediction</span></a>
+      <a href="#" class="nav-link" data-page="analytics"><i class="fa-solid fa-chart-pie"></i><span>Analytics</span></a>
+      <a href="#" class="nav-link" data-page="weather"><i class="fa-solid fa-cloud-sun"></i><span>Weather</span></a>
+      <a href="#" class="nav-link" data-page="panels"><i class="fa-solid fa-bolt"></i><span>Solar Panels</span></a>
+      <a href="#" class="nav-link" data-page="history"><i class="fa-solid fa-calendar-days"></i><span>Historical Data</span></a>
+      <a href="#" class="nav-link" data-page="performance"><i class="fa-solid fa-gauge-high"></i><span>Performance</span></a>
+      <a href="#" class="nav-link" data-page="settings"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="model-chip">
+        <i class="fa-solid fa-brain"></i>
+        <div>
+          <span class="model-chip-title">Random Forest Model</span>
+          <span class="model-chip-sub">R&sup2; 0.970 &middot; live</span>
+        </div>
+        <span class="pulse-dot"></span>
+      </div>
+      <span class="sidebar-version">SolarIQ v2.1.0</span>
+    </div>
+  </aside>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="topbar-title">
+        <h2 id="page-title">Dashboard</h2>
+        <span id="page-crumb">Overview &amp; live production metrics</span>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="live-clock" id="live-clock">
+          <i class="fa-regular fa-clock"></i>
+          <span id="clock-time">00:00:00</span>
+        </div>
+        <button class="icon-btn" id="notif-btn" title="Notifications"><i class="fa-solid fa-bell"></i><span class="badge-dot"></span></button>
+        <button class="icon-btn" id="fullscreen-btn" title="Toggle fullscreen"><i class="fa-solid fa-expand"></i></button>
+        <button class="icon-btn" id="theme-toggle-btn" title="Toggle theme"><i class="fa-solid fa-sun"></i></button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content" id="content">
+
+      <!-- ======================= DASHBOARD PAGE ======================= -->
+      <section class="page active" id="page-dashboard">
+
+        <!-- CINEMATIC HERO -->
+        <div class="hero" id="hero">
+          <!-- SVG filters used by the heat-shimmer overlay -->
+          <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+            <filter id="heatWave" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.01 0.035" numOctaves="2" seed="7" result="turb">
+                <animate attributeName="baseFrequency" values="0.008 0.03;0.015 0.05;0.008 0.03" dur="9s" repeatCount="indefinite" />
+              </feTurbulence>
+              <feDisplacementMap in="SourceGraphic" in2="turb" scale="7" />
+            </filter>
+          </svg>
+
+          <div class="cine-sky"></div>
+          <div class="cine-aurora cine-aurora-1"></div>
+          <div class="cine-aurora cine-aurora-2"></div>
+
+          <div class="parallax-layer" data-depth="14" id="pl-rays"><div class="cine-rays"></div></div>
+
+          <div class="parallax-layer" data-depth="7" id="pl-sun">
+            <div class="cine-sun-wrap">
+              <div class="cine-sun"></div>
+              <div class="cine-flare f1"></div><div class="cine-flare f2"></div><div class="cine-flare f3"></div><div class="cine-flare f4"></div>
+            </div>
+          </div>
+
+          <div class="parallax-layer" data-depth="11" id="pl-clouds">
+            <div class="cine-clouds">
+              <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div><div class="cloud c4"></div>
+            </div>
+          </div>
+
+          <div class="cine-birds" aria-hidden="true">
+            <svg class="bird b1" viewBox="0 0 24 12"><path d="M0 8 Q6 0 12 8 Q18 0 24 8" /></svg>
+            <svg class="bird b2" viewBox="0 0 24 12"><path d="M0 8 Q6 0 12 8 Q18 0 24 8" /></svg>
+            <svg class="bird b3" viewBox="0 0 24 12"><path d="M0 8 Q6 0 12 8 Q18 0 24 8" /></svg>
+          </div>
+
+          <div class="parallax-layer" data-depth="4" id="pl-mountains">
+            <div class="cine-mountains layer-back"></div>
+            <div class="cine-mountains layer-front"></div>
+          </div>
+
+          <div class="cine-grid-floor"></div>
+          <div class="cine-heat"></div>
+
+          <div class="parallax-layer" data-depth="2" id="pl-panels">
+            <div class="cine-panel-field" id="cine-panel-field"></div>
+          </div>
+
+          <div class="cine-fog"></div>
+          <canvas id="particles-canvas"></canvas>
+          <div class="cine-vignette"></div>
+          <div class="mouse-aura" id="mouse-aura"></div>
+
+          <div class="hero-content reveal">
+            <div class="hero-badge"><i class="fa-solid fa-satellite-dish"></i> AI-Powered Solar Intelligence &middot; KSA</div>
+            <h1 class="hero-title">Solar Panel Energy<br><span class="text-gradient">Prediction Dashboard</span></h1>
+            <p class="hero-subtitle">AI-powered prediction and analysis of photovoltaic energy production.</p>
+            <div class="hero-actions">
+              <button class="btn btn-primary ripple" data-goto="prediction"><i class="fa-solid fa-bolt"></i> Launch Prediction</button>
+              <button class="btn btn-ghost ripple" data-goto="analytics"><i class="fa-solid fa-chart-line"></i> View Analytics</button>
+            </div>
+            <div class="hero-stats">
+              <div class="hero-stat"><span class="hero-stat-num" data-count="97">0</span><span>% Model R&sup2;</span></div>
+              <div class="hero-stat"><span class="hero-stat-num" data-count="5">0</span><span>KSA Cities</span></div>
+              <div class="hero-stat"><span class="hero-stat-num" data-count="3">0</span><span>Panel Types</span></div>
+              <div class="hero-stat"><span class="hero-stat-num" data-count="180">0</span><span>Days Tracked</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-gauge"></i> Live Production Metrics</h3>
+          <p>Real-time key performance indicators for today's forecast</p>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"><!-- injected by JS --></div>
+
+        <!-- DASHBOARD CHARTS -->
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-chart-area"></i> Production Overview</h3>
+          <p>Trends across months, cities and energy distribution</p>
+        </div>
+        <div class="chart-grid">
+          <div class="glass-card chart-card span-8 reveal">
+            <div class="chart-card-head">
+              <h4><i class="fa-solid fa-chart-line"></i> Monthly Production (kWh)</h4>
+              <button class="chip-btn export-btn" data-chart="chartMonthly"><i class="fa-solid fa-download"></i> PNG</button>
+            </div>
+            <canvas id="chartMonthly" height="260"></canvas>
+          </div>
+          <div class="glass-card chart-card span-4 reveal">
+            <div class="chart-card-head">
+              <h4><i class="fa-solid fa-chart-pie"></i> Output by City</h4>
+              <button class="chip-btn export-btn" data-chart="chartCityPie"><i class="fa-solid fa-download"></i> PNG</button>
+            </div>
+            <canvas id="chartCityPie" height="260"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head">
+              <h4><i class="fa-solid fa-layer-group"></i> Panel Type Comparison</h4>
+              <button class="chip-btn export-btn" data-chart="chartPanelBar"><i class="fa-solid fa-download"></i> PNG</button>
+            </div>
+            <canvas id="chartPanelBar" height="230"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head">
+              <h4><i class="fa-solid fa-history"></i> Prediction History (this session)</h4>
+              <button class="chip-btn export-btn" data-chart="chartPredHistoryHome"><i class="fa-solid fa-download"></i> PNG</button>
+            </div>
+            <canvas id="chartPredHistoryHome" height="230"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= PREDICTION PAGE ======================= -->
+      <section class="page" id="page-prediction">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Energy Prediction</h3>
+          <p>Configure conditions and let the model forecast daily output</p>
+        </div>
+
+        <div class="prediction-layout">
+          <form class="glass-card prediction-form reveal" id="prediction-form">
+            <div class="form-grid">
+              <div class="field">
+                <label><i class="fa-solid fa-city"></i> City</label>
+                <select id="in-city">
+                  <option>Riyadh</option><option>Jeddah</option><option>Mecca</option><option>Medina</option><option>Dammam</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-solar-panel"></i> Panel Type</label>
+                <select id="in-panel">
+                  <option>Monocrystalline</option><option>Polycrystalline</option><option>Thin-Film</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-screwdriver-wrench"></i> Mount Type</label>
+                <select id="in-mount">
+                  <option>Rooftop</option><option>Ground</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-leaf"></i> Season</label>
+                <select id="in-season">
+                  <option>Winter</option><option>Spring</option><option selected>Summer</option><option>Fall</option>
+                </select>
+              </div>
+
+              <div class="field slider-field">
+                <label><i class="fa-solid fa-sun"></i> Solar Radiation</label>
+                <div class="slider-row">
+                  <input type="range" id="in-radiation" min="1" max="9" step="0.1" value="6.5" />
+                  <span class="slider-val"><span id="val-radiation">6.5</span> kWh/m&sup2;</span>
+                </div>
+              </div>
+              <div class="field slider-field">
+                <label><i class="fa-solid fa-temperature-three-quarters"></i> Temperature</label>
+                <div class="slider-row">
+                  <input type="range" id="in-temp" min="0" max="50" step="0.5" value="33" />
+                  <span class="slider-val"><span id="val-temp">33</span>&deg;C</span>
+                </div>
+              </div>
+              <div class="field slider-field">
+                <label><i class="fa-solid fa-droplet"></i> Humidity</label>
+                <div class="slider-row">
+                  <input type="range" id="in-humidity" min="0" max="100" step="1" value="35" />
+                  <span class="slider-val"><span id="val-humidity">35</span>%</span>
+                </div>
+              </div>
+              <div class="field slider-field">
+                <label><i class="fa-solid fa-wind"></i> Wind Speed</label>
+                <div class="slider-row">
+                  <input type="range" id="in-wind" min="0" max="60" step="0.5" value="12" />
+                  <span class="slider-val"><span id="val-wind">12</span> km/h</span>
+                </div>
+              </div>
+              <div class="field slider-field">
+                <label><i class="fa-solid fa-cloud"></i> Cloud Cover</label>
+                <div class="slider-row">
+                  <input type="range" id="in-cloud" min="0" max="100" step="1" value="15" />
+                  <span class="slider-val"><span id="val-cloud">15</span>%</span>
+                </div>
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-gauge-simple"></i> Pressure <span class="unit">hPa</span></label>
+                <input type="number" id="in-pressure" min="950" max="1050" step="0.1" value="1001.8" />
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-hourglass-half"></i> Day Length <span class="unit">hours</span></label>
+                <input type="number" id="in-daylength" min="8" max="14" step="0.1" value="12.4" />
+              </div>
+              <div class="field">
+                <label><i class="fa-regular fa-calendar"></i> Month</label>
+                <select id="in-month">
+                  <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+                  <option value="4">April</option><option value="5">May</option><option value="6" selected>June</option>
+                  <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+                  <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+                </select>
+              </div>
+              <div class="field">
+                <label><i class="fa-solid fa-calendar-day"></i> Day</label>
+                <input type="number" id="in-day" min="1" max="31" step="1" value="15" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary ripple" id="btn-predict"><i class="fa-solid fa-bolt"></i> Predict</button>
+              <button type="button" class="btn btn-outline ripple" id="btn-clear"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+              <button type="button" class="btn btn-ghost ripple" id="btn-random"><i class="fa-solid fa-dice"></i> Random Example</button>
+            </div>
+          </form>
+
+          <div class="glass-card prediction-result reveal" id="prediction-result">
+            <div class="result-idle" id="result-idle">
+              <i class="fa-solid fa-solar-panel result-idle-icon"></i>
+              <p>Configure the inputs and click <strong>Predict</strong> to forecast today's solar output.</p>
+            </div>
+
+            <div class="result-loading" id="result-loading" hidden>
+              <div class="predict-spinner"></div>
+              <p>Running Random Forest inference&hellip;</p>
+            </div>
+
+            <div class="result-content" id="result-content" hidden>
+              <div class="result-ring-wrap">
+                <svg class="result-ring" viewBox="0 0 140 140">
+                  <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
+                  <circle class="ring-fg" id="ring-fg" cx="70" cy="70" r="60"></circle>
+                </svg>
+                <div class="result-ring-center">
+                  <i class="fa-solid fa-bolt result-bolt"></i>
+                  <span class="result-number" id="result-number">0.0</span>
+                  <span class="result-unit">kWh / day</span>
+                </div>
+              </div>
+              <div class="result-meta">
+                <div class="result-meta-item">
+                  <span class="label">Efficiency vs. City Peak</span>
+                  <span class="value" id="result-efficiency">--%</span>
+                </div>
+                <div class="result-meta-item">
+                  <span class="label">Estimated CO&sub2; Offset</span>
+                  <span class="value" id="result-co2">-- kg</span>
+                </div>
+                <div class="result-meta-item">
+                  <span class="label">Homes Powered (avg)</span>
+                  <span class="value" id="result-homes">--</span>
+                </div>
+              </div>
+              <button class="btn btn-outline ripple" id="btn-report"><i class="fa-solid fa-file-arrow-down"></i> Download Report</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card chart-card reveal" style="margin-top:24px;">
+          <div class="chart-card-head">
+            <h4><i class="fa-solid fa-timeline"></i> Prediction History</h4>
+            <button class="chip-btn export-btn" data-chart="chartPredHistory"><i class="fa-solid fa-download"></i> PNG</button>
+          </div>
+          <canvas id="chartPredHistory" height="220"></canvas>
+        </div>
+      </section>
+
+      <!-- ======================= ANALYTICS PAGE ======================= -->
+      <section class="page" id="page-analytics">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-chart-column"></i> Analytics</h3>
+          <p>Explore performance across cities, seasons and panel types</p>
+        </div>
+
+        <div class="filters-bar glass-card reveal">
+          <div class="field">
+            <label>City</label>
+            <select id="filter-city">
+              <option value="all">All Cities</option>
+              <option>Riyadh</option><option>Jeddah</option><option>Mecca</option><option>Medina</option><option>Dammam</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Panel Type</label>
+            <select id="filter-panel">
+              <option value="all">All Panel Types</option>
+              <option>Monocrystalline</option><option>Polycrystalline</option><option>Thin-Film</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Season</label>
+            <select id="filter-season">
+              <option value="all">All Seasons</option>
+              <option>Winter</option><option>Spring</option><option>Summer</option><option>Fall</option>
+            </select>
+          </div>
+          <button class="btn btn-outline ripple" id="btn-reset-filters"><i class="fa-solid fa-filter-circle-xmark"></i> Reset</button>
+        </div>
+
+        <div class="kpi-grid kpi-grid-analytics" id="analytics-stats"><!-- injected --></div>
+
+        <div class="chart-grid">
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-chart-simple"></i> Seasonal Comparison</h4></div>
+            <canvas id="chartSeasonRadar" height="260"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-solar-panel"></i> Panel Type Comparison</h4></div>
+            <canvas id="chartPanelCompare" height="260"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-city"></i> City Comparison</h4></div>
+            <canvas id="chartCityCompare" height="240"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-braille"></i> Cloud Cover vs Output (Scatter)</h4></div>
+            <canvas id="chartScatter" height="240"></canvas>
+          </div>
+          <div class="glass-card chart-card span-12 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-table-cells"></i> City &times; Month Output Heatmap</h4></div>
+            <div class="heatmap" id="heatmap"><!-- injected --></div>
+          </div>
+          <div class="glass-card chart-card span-12 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-trophy"></i> Top Performing Locations</h4></div>
+            <div class="top-locations" id="top-locations"><!-- injected --></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= WEATHER PAGE ======================= -->
+      <section class="page" id="page-weather">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-cloud-sun-rain"></i> Weather Dashboard</h3>
+          <p>Live atmospheric conditions feeding the prediction engine</p>
+        </div>
+
+        <div class="weather-grid" id="weather-grid"><!-- injected --></div>
+
+        <div class="glass-card chart-card reveal" style="margin-top:24px;">
+          <div class="chart-card-head"><h4><i class="fa-solid fa-chart-line"></i> 7-Day Weather Trend</h4></div>
+          <canvas id="chartWeatherTrend" height="240"></canvas>
+        </div>
+
+        <div class="section-heading reveal" style="margin-top:32px;">
+          <h3><i class="fa-regular fa-calendar-days"></i> 7-Day Forecast</h3>
+        </div>
+        <div class="forecast-row" id="forecast-row"><!-- injected --></div>
+      </section>
+
+      <!-- ======================= SOLAR PANELS PAGE ======================= -->
+      <section class="page" id="page-panels">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-solar-panel"></i> Solar Panel Technologies</h3>
+          <p>Compare panel types available in the KSA dataset</p>
+        </div>
+
+        <div class="panel-cards" id="panel-cards"><!-- injected --></div>
+
+        <div class="glass-card chart-card reveal" style="margin-top:24px;">
+          <div class="chart-card-head"><h4><i class="fa-solid fa-radar"></i> Multi-Factor Comparison</h4></div>
+          <canvas id="chartPanelRadar" height="280"></canvas>
+        </div>
+      </section>
+
+      <!-- ======================= HISTORICAL DATA PAGE ======================= -->
+      <section class="page" id="page-history">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-database"></i> Historical Data</h3>
+          <p>Browse, search and export the underlying production records</p>
+        </div>
+
+        <div class="glass-card reveal">
+          <div class="table-controls">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="table-search" placeholder="Search city, panel type, mount..." />
+            </div>
+            <select id="table-page-size">
+              <option value="10">10 / page</option>
+              <option value="15" selected>15 / page</option>
+              <option value="25">25 / page</option>
+              <option value="50">50 / page</option>
+            </select>
+            <button class="btn btn-outline ripple" id="btn-download-csv"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="data-table">
+              <thead>
+                <tr>
+                  <th data-key="date">Date <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="city">City <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="panel">Panel Type <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="mount">Mount <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="radiation">Radiation <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="temp">Temp &deg;C <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="cloud">Cloud % <i class="fa-solid fa-sort"></i></th>
+                  <th data-key="output">Output kWh <i class="fa-solid fa-sort"></i></th>
+                </tr>
+              </thead>
+              <tbody id="table-body"><!-- injected --></tbody>
+            </table>
+          </div>
+
+          <div class="table-footer">
+            <span id="table-info">Showing 0 records</span>
+            <div class="pagination" id="pagination"><!-- injected --></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= PERFORMANCE PAGE ======================= -->
+      <section class="page" id="page-performance">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-gauge-high"></i> Model Performance</h3>
+          <p>Random Forest Regressor &mdash; trained on weather, air-quality &amp; seasonal features</p>
+        </div>
+
+        <div class="gauge-grid" id="gauge-grid"><!-- injected --></div>
+
+        <div class="chart-grid">
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-scale-balanced"></i> Linear Regression vs Random Forest</h4></div>
+            <canvas id="chartModelCompare" height="250"></canvas>
+          </div>
+          <div class="glass-card chart-card span-6 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-chart-line"></i> Training vs Validation Loss</h4></div>
+            <canvas id="chartLoss" height="250"></canvas>
+          </div>
+          <div class="glass-card chart-card span-12 reveal">
+            <div class="chart-card-head"><h4><i class="fa-solid fa-list-ol"></i> Top 15 Feature Importances</h4></div>
+            <canvas id="chartFeatureImportance" height="320"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= SETTINGS PAGE ======================= -->
+      <section class="page" id="page-settings">
+        <div class="section-heading reveal">
+          <h3><i class="fa-solid fa-gear"></i> Settings</h3>
+          <p>Personalize your SolarIQ experience</p>
+        </div>
+
+        <div class="settings-grid">
+          <div class="glass-card settings-card reveal">
+            <h4><i class="fa-solid fa-palette"></i> Appearance</h4>
+            <div class="settings-row">
+              <span>Dark / Light Theme</span>
+              <label class="switch"><input type="checkbox" id="setting-theme" /><span class="slider-toggle"></span></label>
+            </div>
+            <div class="settings-row">
+              <span>Interface Animations</span>
+              <label class="switch"><input type="checkbox" id="setting-anim" checked /><span class="slider-toggle"></span></label>
+            </div>
+            <div class="settings-row">
+              <span>Particle Background</span>
+              <label class="switch"><input type="checkbox" id="setting-particles" checked /><span class="slider-toggle"></span></label>
+            </div>
+          </div>
+
+          <div class="glass-card settings-card reveal">
+            <h4><i class="fa-solid fa-ruler-combined"></i> Units &amp; Preferences</h4>
+            <div class="settings-row">
+              <span>Units</span>
+              <div class="segmented" id="setting-units">
+                <button class="active" data-val="metric">Metric</button>
+                <button data-val="imperial">Imperial</button>
+              </div>
+            </div>
+            <div class="settings-row">
+              <span>Notifications</span>
+              <label class="switch"><input type="checkbox" id="setting-notif" checked /><span class="slider-toggle"></span></label>
+            </div>
+          </div>
+
+          <div class="glass-card settings-card reveal">
+            <h4><i class="fa-solid fa-circle-info"></i> About &amp; Data Sources</h4>
+            <p class="about-text">SolarIQ predicts daily photovoltaic output for five Saudi cities using a Random Forest Regressor trained on merged weather, air-quality and solar generation datasets.</p>
+            <ul class="about-list">
+              <li><i class="fa-solid fa-check"></i> KSA Weather Dataset (2020&ndash;2025)</li>
+              <li><i class="fa-solid fa-check"></i> Saudi Arabia Air Quality Dataset</li>
+              <li><i class="fa-solid fa-check"></i> KSA Solar Dataset &mdash; Top 5 Cities (2024)</li>
+            </ul>
+            <button class="btn btn-outline ripple" id="btn-reset-data"><i class="fa-solid fa-arrows-rotate"></i> Regenerate Sample Data</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <span>&copy; 2026 SolarIQ &mdash; Solar Panel Energy Prediction Dashboard. Built for KSA renewable intelligence.</span>
+    </footer>
+  </div>
+</div>
+
+<!-- Back to top -->
+<button class="back-to-top" id="back-to-top" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+<!-- Floating action button -->
+<div class="fab-wrap" id="fab-wrap">
+  <button class="fab-item" data-action="predict" title="Quick Predict"><i class="fa-solid fa-bolt"></i></button>
+  <button class="fab-item" data-action="export" title="Export Dashboard"><i class="fa-solid fa-camera"></i></button>
+  <button class="fab-item" data-action="theme" title="Toggle Theme"><i class="fa-solid fa-moon"></i></button>
+  <button class="fab-main" id="fab-main"><i class="fa-solid fa-plus"></i></button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فاهِم — معلّمك الخصوصي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root{
+  --bg:#120D26; --bg2:#1C1538; --bg3:#271E4D; --line:#372B66;
+  --ink:#F1ECFF; --muted:#9E92CF;
+  --lav:#B79CFF; --amber:#FFC465; --mint:#74E6AC; --red:#FF8E8E;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--ink);
+  display:flex;flex-direction:column;overflow:hidden}
+h1,h2,h3{font-family:'Baloo Bhaijaan 2',sans-serif;font-weight:700}
+button{font-family:inherit}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--lav)}
+:focus-visible{outline:2px solid var(--lav);outline-offset:2px}
+
+/* ============ شاشة البداية ============ */
+#uploadScreen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:32px 24px;text-align:center;overflow-y:auto}
+.logoMark{width:68px;height:68px;border-radius:20px;background:linear-gradient(135deg,var(--lav),#7E5FE0);
+  display:grid;place-items:center;font-family:'Baloo Bhaijaan 2';font-size:40px;font-weight:700;color:#150F2E;
+  box-shadow:0 12px 40px rgba(126,95,224,.35)}
+#uploadScreen h1{font-size:42px;line-height:1.15}
+#uploadScreen h1 em{font-style:normal;color:var(--lav)}
+.tagline{color:var(--muted);max-width:520px;line-height:1.85;font-size:15px}
+
+.opts{display:flex;flex-direction:column;gap:12px;align-items:center}
+.optRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.optRow .optLabel{font-size:13px;color:var(--muted);min-width:64px;text-align:end}
+.pills{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:4px}
+.pills button{border:none;background:transparent;color:var(--muted);padding:8px 20px;border-radius:99px;
+  font-size:13.5px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
+.pills button.on{background:var(--lav);color:#150F2E}
+
+#dropZone{width:min(560px,100%);border:1.5px dashed var(--line);border-radius:20px;padding:36px 32px;
+  cursor:pointer;transition:.25s;background:var(--bg2)}
+#dropZone:hover,#dropZone.drag{border-color:var(--lav);background:var(--bg3);transform:translateY(-2px)}
+#dropZone .dzIcon{font-size:32px;margin-bottom:8px}
+#dropZone strong{color:var(--lav);font-size:16px}
+#dropZone small{display:block;color:var(--muted);margin-top:8px}
+#uploadStatus{color:var(--amber);min-height:22px;font-size:14px}
+
+.feats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:680px}
+.feats span{background:var(--bg2);border:1px solid var(--line);color:var(--muted);
+  border-radius:99px;padding:7px 15px;font-size:12px}
+
+/* ============ المكتبة ============ */
+#homeScreen{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;padding:32px 24px;overflow-y:auto}
+#homeScreen.active{display:flex}
+#homeScreen h1{font-size:38px}
+#homeScreen h1 em{font-style:normal;color:var(--lav)}
+#homeScreen .hSub{color:var(--muted);font-size:14px;margin-top:-8px}
+.courseGrid{display:flex;flex-direction:column;gap:12px;width:min(560px,100%)}
+.courseCard{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:18px;
+  cursor:pointer;transition:.2s;text-align:start;display:flex;flex-direction:column;gap:10px;position:relative}
+.courseCard:hover{border-color:var(--lav);transform:translateY(-2px)}
+.courseCard .cTitle{font-weight:600;font-size:15.5px;padding-inline-end:36px}
+.courseCard .cMeta{font-size:12px;color:var(--muted)}
+.courseCard .cBarWrap{height:6px;border-radius:99px;background:var(--bg);overflow:hidden}
+.courseCard .cBar{height:100%;background:linear-gradient(90deg,var(--lav),var(--mint))}
+.courseCard .delBtn{position:absolute;top:14px;inset-inline-end:14px;background:transparent;
+  border:none;color:var(--muted);font-size:15px;cursor:pointer;border-radius:8px;width:28px;height:28px}
+.courseCard .delBtn:hover{color:var(--red);background:var(--bg3)}
+#newCourseBtn{width:min(560px,100%);padding:15px;border-radius:16px;border:1.5px dashed var(--line);
+  background:transparent;color:var(--lav);font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+#newCourseBtn:hover{border-color:var(--lav);background:var(--bg2)}
+#backHome{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:99px;
+  padding:8px 20px;font-size:13px;cursor:pointer}
+#backHome:hover{color:var(--ink);border-color:var(--lav)}
+.libBtn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:10px;
+  width:36px;height:36px;cursor:pointer;font-size:16px;flex-shrink:0}
+.libBtn:hover{color:var(--lav);border-color:var(--lav)}
+
+/* ============ التطبيق ============ */
+#appScreen{display:none;flex:1;min-height:0}
+#appScreen.active{display:flex}
+main{flex:1;display:flex;flex-direction:column;min-width:0;order:1}
+#chatHeader{padding:13px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;background:var(--bg)}
+.miniLogo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--lav),#7E5FE0);
+  display:grid;place-items:center;font-family:'Baloo Bhaijaan 2';font-size:22px;font-weight:700;color:#150F2E;flex-shrink:0}
+#chatHeader .title{font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#chatHeader .sub{font-size:12px;color:var(--muted)}
+#examBadge{display:none;padding:5px 16px;border-radius:99px;
+  background:var(--amber);color:#2A1D05;font-size:13px;font-weight:600;flex-shrink:0}
+
+#messages{flex:1;overflow-y:auto;padding:28px 26px;display:flex;flex-direction:column;gap:18px;
+  background:radial-gradient(1200px 500px at 70% -10%,rgba(126,95,224,.07),transparent)}
+.row{display:flex;gap:12px;max-width:840px}
+.row.user{align-self:flex-start}
+.row.bot{align-self:stretch}
+.avatar{width:34px;height:34px;border-radius:11px;flex-shrink:0;display:grid;place-items:center;
+  font-family:'Baloo Bhaijaan 2';font-size:18px;font-weight:700;background:var(--bg3);color:var(--lav);border:1px solid var(--line)}
+.bubbleWrap{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.msg{padding:14px 18px;border-radius:16px;line-height:1.95;font-size:15px;min-width:0}
+@media (prefers-reduced-motion:no-preference){
+  .row,.tipCard,.gapAlert{animation:rise .3s ease both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+.row.user .msg{background:var(--lav);color:#150F2E;border-end-start-radius:5px;font-weight:500}
+.row.bot .msg{background:var(--bg2);border:1px solid var(--line);border-start-end-radius:5px}
+.msg :is(h1,h2,h3){color:var(--lav);margin:14px 0 8px;font-size:17px}
+.msg p{margin:8px 0}
+.msg ul,.msg ol{margin:8px 26px}
+.msg table{border-collapse:collapse;margin:12px 0;width:100%;font-size:14px}
+.msg th,.msg td{border:1px solid var(--line);padding:8px 12px;text-align:start}
+.msg th{background:var(--bg3);color:var(--lav)}
+.msg pre{background:#0D0920;border:1px solid var(--line);border-radius:10px;padding:14px;
+  overflow-x:auto;direction:ltr;text-align:left;margin:12px 0}
+.msg code{font-size:13px}
+.msg .mermaid{background:#FBF9FF;border-radius:12px;padding:18px;margin:12px 0;display:flex;justify-content:center;overflow-x:auto}
+.msg blockquote{border-inline-start:3px solid var(--lav);padding-inline-start:14px;color:var(--muted);margin:10px 0}
+.swapBtn{align-self:flex-start;background:transparent;border:1px solid var(--line);color:var(--muted);
+  border-radius:99px;padding:5px 14px;font-size:12px;cursor:pointer;transition:.2s}
+.swapBtn:hover{border-color:var(--lav);color:var(--lav)}
+
+.tipCard{align-self:stretch;max-width:840px;padding:13px 18px;border-radius:var(--r);line-height:1.8;
+  font-size:14px;background:rgba(116,230,172,.07);border:1px solid rgba(116,230,172,.4);color:var(--mint)}
+.tipCard b{display:block;margin-bottom:3px}
+.gapAlert{align-self:stretch;max-width:840px;padding:13px 18px;border-radius:var(--r);line-height:1.8;
+  font-size:14px;background:rgba(255,196,101,.08);border:1px solid rgba(255,196,101,.45);color:var(--amber)}
+.gapAlert b{display:block;margin-bottom:3px}
+
+.reportCard{align-self:stretch;max-width:840px;padding:24px;border-radius:18px;
+  background:var(--bg3);border:1px solid var(--lav)}
+.reportCard h3{color:var(--lav);font-size:21px;margin-bottom:16px}
+.readyNum{font-family:'Baloo Bhaijaan 2';font-size:54px;color:var(--amber);line-height:1}
+.readyBarWrap{height:10px;border-radius:99px;background:var(--bg);overflow:hidden;margin:14px 0 20px}
+.readyBar{height:100%;background:linear-gradient(90deg,var(--amber),var(--mint));transition:width 1.2s ease}
+.reportCard .cols{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px}
+.reportCard .cols>div{flex:1;min-width:180px;font-size:14px;line-height:2}
+.reportCard .cols b{display:block;margin-bottom:4px}
+.reportCard .strong b{color:var(--mint)}
+.reportCard .weakC b{color:var(--red)}
+.reportCard .advice{font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px;line-height:1.9}
+
+.typing{color:var(--muted);font-size:13.5px;padding:0 26px 8px;display:none}
+.typing.show{display:block}
+#inputBar{padding:16px 26px 22px;border-top:1px solid var(--line);display:flex;gap:12px;background:var(--bg)}
+#inputBox{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;color:var(--ink);font-family:inherit;font-size:15px;resize:none;height:54px;
+  outline:none;transition:border-color .2s}
+#inputBox:focus{border-color:var(--lav)}
+#sendBtn{background:var(--lav);color:#150F2E;border:none;border-radius:var(--r);padding:0 28px;
+  font-family:'Baloo Bhaijaan 2';font-size:17px;font-weight:700;cursor:pointer;transition:.15s}
+#sendBtn:hover{filter:brightness(1.08)}
+#sendBtn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ============ الشريط الجانبي ============ */
+aside{width:320px;min-width:320px;background:var(--bg2);border-inline-start:1px solid var(--line);
+  display:flex;flex-direction:column;order:2}
+aside header{padding:20px 22px 4px;display:flex;align-items:baseline;justify-content:space-between}
+aside header h2{font-size:19px}
+#pct{font-family:'Baloo Bhaijaan 2';font-size:19px;color:var(--mint)}
+#progressBarWrap{margin:10px 22px 6px;height:6px;border-radius:99px;background:var(--bg);overflow:hidden}
+#progressBar{height:100%;width:0%;background:linear-gradient(90deg,var(--lav),var(--mint));transition:width .5s}
+#progressLabel{padding:0 22px 10px;font-size:12.5px;color:var(--muted)}
+
+#topicList{flex:1;overflow-y:auto;padding:6px 18px 10px;list-style:none}
+#topicList li{display:flex;gap:14px;align-items:flex-start;padding:0 4px;font-size:13.5px;
+  color:var(--muted);line-height:1.55}
+#topicList li .railCell{display:flex;flex-direction:column;align-items:center;align-self:stretch;width:20px;flex-shrink:0}
+#topicList li .dot{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--line);
+  background:var(--bg2);display:grid;place-items:center;font-size:9.5px;font-weight:700;transition:.3s;z-index:1;margin-top:3px}
+#topicList li .rail{width:2.5px;flex:1;background:var(--line);min-height:14px}
+#topicList li:last-child .rail{background:transparent}
+#topicList li .tName{padding-bottom:18px}
+#topicList li.covered{color:var(--ink)}
+#topicList li.covered .dot{background:var(--mint);border-color:var(--mint);color:#0E2B1C}
+#topicList li.covered .rail{background:var(--mint)}
+#topicList li.weak{color:var(--amber)}
+#topicList li.weak .dot{border-color:var(--amber);color:var(--amber)}
+#topicList li.current{color:var(--ink);font-weight:600}
+#topicList li.current .dot{border-color:var(--amber);background:var(--bg3)}
+@media (prefers-reduced-motion:no-preference){
+  #topicList li.current .dot{animation:halo 1.7s infinite}
+  @keyframes halo{0%,100%{box-shadow:0 0 0 0 rgba(255,196,101,.35)}50%{box-shadow:0 0 0 7px rgba(255,196,101,.06)}}
+}
+
+.sideBtns{display:flex;flex-direction:column;gap:10px;padding:0 18px 20px}
+#insightsBtn{padding:12px;border-radius:var(--r);border:1px solid var(--line);background:var(--bg3);
+  color:var(--ink);font-size:14px;font-weight:600;cursor:pointer;transition:.2s;position:relative}
+#insightsBtn:hover{border-color:var(--lav)}
+#insightsBtn .badge{position:absolute;top:-7px;inset-inline-end:-7px;background:var(--lav);color:#150F2E;
+  border-radius:99px;min-width:20px;height:20px;display:none;place-items:center;font-size:11px;font-weight:700;padding:0 5px}
+#examBtn{padding:13px;border-radius:var(--r);border:none;
+  background:linear-gradient(135deg,var(--amber),#FF9D5C);color:#2A1D05;
+  font-family:'Baloo Bhaijaan 2';font-size:16px;font-weight:700;cursor:pointer;transition:.2s}
+#examBtn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,157,92,.25)}
+#examBtn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ============ لوحة ملف الطالب ============ */
+#overlay{position:fixed;inset:0;background:rgba(10,7,22,.75);display:none;z-index:50;
+  align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px)}
+#overlay.show{display:flex}
+#insightsPanel{width:min(640px,100%);max-height:88vh;overflow-y:auto;background:var(--bg2);
+  border:1px solid var(--line);border-radius:20px;padding:26px}
+#insightsPanel .pHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+#insightsPanel h2{font-size:22px;color:var(--lav)}
+#closeBtn{background:var(--bg3);border:1px solid var(--line);color:var(--muted);width:34px;height:34px;
+  border-radius:10px;cursor:pointer;font-size:16px}
+#closeBtn:hover{color:var(--ink);border-color:var(--lav)}
+.pSub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.iSec{background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;margin-bottom:12px}
+.iSec h4{font-size:14px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.iSec .empty{font-size:13px;color:var(--muted)}
+.iSec ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+.iSec li{font-size:13.5px;line-height:1.7;color:var(--ink);padding-inline-start:14px;position:relative}
+.iSec li::before{content:'';position:absolute;inset-inline-start:0;top:10px;width:5px;height:5px;border-radius:50%;background:var(--line)}
+.iSec.tips h4{color:var(--mint)} .iSec.tips li::before{background:var(--mint)}
+.iSec.gaps h4{color:var(--amber)} .iSec.gaps li::before{background:var(--amber)}
+.iSec.twin h4{color:var(--lav)}
+.iSec.events h4{color:var(--muted)}
+.iSec.weakS h4{color:var(--red)} .iSec.weakS li::before{background:var(--red)}
+.iSec .bigStat{font-family:'Baloo Bhaijaan 2';font-size:30px;color:var(--amber)}
+
+@media (max-width:900px){
+  #appScreen.active{flex-direction:column}
+  aside{width:100%;min-width:0;order:0;border-inline-start:none;border-bottom:1px solid var(--line);max-height:250px}
+  #topicList{display:flex;overflow-x:auto;padding:6px 14px}
+  #topicList li{min-width:170px;flex-direction:column;gap:8px}
+  #topicList li .railCell{flex-direction:row;width:auto;align-self:auto}
+  #topicList li .rail{height:2.5px;width:40px;flex:none;margin-top:10px}
+  #topicList li .tName{padding-bottom:6px}
+  .sideBtns{flex-direction:row}
+  .sideBtns button{flex:1}
+  #uploadScreen h1{font-size:34px}
+  .optRow .optLabel{min-width:0}
+}
+</style>
+</head>
+<body>
+
+<section id="homeScreen">
+  <div class="logoMark">ف</div>
+  <h1>شابتراتك في <em>فاهِم</em></h1>
+  <p class="hSub">كل شابتر محفوظ بتقدمه وملف الطالب حقه — كمّل من وين ما وقفت</p>
+  <div class="courseGrid" id="courseGrid"></div>
+  <button id="newCourseBtn">＋ أضف شابتر جديد</button>
+</section>
+
+<section id="uploadScreen">
+  <div class="logoMark">ف</div>
+  <h1>فاهِم — معلّمك <em>الخصوصي</em></h1>
+  <p class="tagline">ارفع منهجك وأنا أدرّسك إياه نقطة نقطة، أكشف فجواتك وأتكيف مع أسلوبك، وأجهّزك للاختبار الحقيقي.</p>
+
+  <div class="opts">
+    <div class="optRow"><span class="optLabel">اللغة</span>
+      <div class="pills" id="pkLang">
+        <button class="on" data-v="ar">🇸🇦 عربي</button><button data-v="en">🇬🇧 English</button>
+      </div>
+    </div>
+    <div class="optRow"><span class="optLabel">هدفك</span>
+      <div class="pills" id="pkGoal">
+        <button class="on" data-v="study">📖 مذاكرة أول مرة</button><button data-v="review">🔄 مراجعة</button>
+      </div>
+    </div>
+    <div class="optRow"><span class="optLabel">وقتك</span>
+      <div class="pills" id="pkPace">
+        <button class="on" data-v="relaxed">🌙 مرتاح</button><button data-v="fast">⏱️ مستعجل</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="dropZone" tabindex="0" role="button" aria-label="رفع ملف المنهج">
+    <div class="dzIcon">📚</div>
+    <strong>اضغط لرفع المنهج</strong> أو اسحب الملف هنا
+    <small>PDF أو TXT أو MD — حتى 20MB</small>
+  </div>
+  <input type="file" id="fileInput" accept=".pdf,.txt,.md" hidden>
+  <div id="uploadStatus"></div>
+  <button id="backHome" style="display:none">→ رجوع للمكتبة</button>
+
+  <div class="feats">
+    <span>🗺️ مسار تعلم حيّ</span>
+    <span>🔍 كشف الفجوات المعرفية</span>
+    <span>🧬 يتكيف مع أسلوبك</span>
+    <span>💡 نصايح للاختبار</span>
+    <span>🎯 اختبار جاهزية</span>
+  </div>
+</section>
+
+<section id="appScreen">
+  <main>
+    <div id="chatHeader">
+      <div class="miniLogo">ف</div>
+      <div style="min-width:0">
+        <div class="title" id="materialTitle"></div>
+        <div class="sub" id="modeTag"></div>
+      </div>
+      <span id="examBadge">وضع الاختبار</span>
+      <button class="libBtn" id="toLibBtn" title="مكتبة الشابترات" style="margin-inline-start:auto">📚</button>
+    </div>
+    <div id="messages"></div>
+    <div class="typing" id="typing">فاهِم يكتب…</div>
+    <div id="inputBar">
+      <textarea id="inputBox" placeholder="اكتب إجابتك أو سؤالك…"></textarea>
+      <button id="sendBtn">إرسال</button>
+    </div>
+  </main>
+
+  <aside>
+    <header><h2>مسار التعلم</h2><span id="pct">0%</span></header>
+    <div id="progressBarWrap"><div id="progressBar"></div></div>
+    <div id="progressLabel">جاهز للانطلاق</div>
+    <ul id="topicList"></ul>
+    <div class="sideBtns">
+      <button id="insightsBtn">📊 ملف الطالب<span class="badge" id="insightsBadge">0</span></button>
+      <button id="examBtn">🎯 اختبر جاهزيتي</button>
+    </div>
+  </aside>
+</section>
+
+<div id="overlay">
+  <div id="insightsPanel" role="dialog" aria-label="ملف الطالب">
+    <div class="pHead"><h2>📊 ملف الطالب</h2><button id="closeBtn" aria-label="إغلاق">✕</button></div>
+    <p class="pSub">كل اللي جمعه فاهِم عنك خلال الجلسة — يتحدث تلقائياً مع كل تفاعل</p>
+
+    <div class="iSec twin"><h4>🧬 أسلوب تعلمك (التوأم الرقمي)</h4><div id="iStyle" class="empty">لسا يتعرف عليك… كمّل كم تفاعل</div></div>
+    <div class="iSec tips"><h4>💡 بنك نصايح الاختبار</h4><div id="iTips" class="empty">أول ما يمر على شي مهم للاختبار بينحفظ هنا</div></div>
+    <div class="iSec gaps"><h4>🔍 فجوات معرفية مكتشفة</h4><div id="iGaps" class="empty">ما اكتشف أي فجوة لحد الآن — ممتاز</div></div>
+    <div class="iSec weakS"><h4>⚠️ نقاط تحتاج تقوية (تحذير مبكر)</h4><div id="iWeak" class="empty">لا يوجد</div></div>
+    <div class="iSec events"><h4>📝 ملاحظات فاهِم عن تعلمك</h4><div id="iEvents" class="empty">لا توجد ملاحظات بعد</div></div>
+    <div class="iSec"><h4>🎯 آخر تقرير جاهزية</h4><div id="iReport" class="empty">ما سويت اختبار الجاهزية بعد</div></div>
+  </div>
+</div>
+
+<script>
+mermaid.initialize({startOnLoad:false, theme:'neutral',
+  flowchart:{useMaxWidth:true, htmlLabels:true, nodeSpacing:60, rankSpacing:60, padding:12},
+  themeVariables:{fontSize:'15px'}});
+
+const uid=(()=>{let u=localStorage.getItem('fahem_uid');
+  if(!u){u=([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)).replace(/-/g,'');localStorage.setItem('fahem_uid',u)}
+  return u})();
+let courseId=null, topics=[], covered=new Set(), weak=new Set(), examMode=false;
+let opts={lang:'ar', goal:'study', pace:'relaxed'};
+let insights={style:null, tips:[], gaps:[], events:[], report:null};
+const $=id=>document.getElementById(id);
+
+['pkLang','pkGoal','pkPace'].forEach(pid=>{
+  $(pid).querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    $(pid).querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    opts[pid==='pkLang'?'lang':pid==='pkGoal'?'goal':'pace']=b.dataset.v;
+  });
+});
+
+$('dropZone').onclick=()=>$('fileInput').click();
+$('dropZone').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')$('fileInput').click()};
+$('dropZone').ondragover=e=>{e.preventDefault();$('dropZone').classList.add('drag')};
+$('dropZone').ondragleave=()=>$('dropZone').classList.remove('drag');
+$('dropZone').ondrop=e=>{e.preventDefault();$('dropZone').classList.remove('drag');
+  if(e.dataTransfer.files[0])uploadFile(e.dataTransfer.files[0])};
+$('fileInput').onchange=e=>{if(e.target.files[0])uploadFile(e.target.files[0])};
+
+async function uploadFile(file){
+  $('uploadStatus').textContent='جارٍ قراءة المنهج وبناء مسار التعلم… (قد يأخذ دقيقة)';
+  const fd=new FormData();
+  fd.append('file',file); fd.append('lang',opts.lang); fd.append('goal',opts.goal); fd.append('pace',opts.pace); fd.append('user_id',uid);
+  try{
+    const res=await fetch('/api/upload',{method:'POST',body:fd});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'فشل الرفع');
+    enterCourse(data,{lang:opts.lang,goal:opts.goal,pace:opts.pace});
+    $('modeTag').textContent=[
+      opts.lang==='ar'?'عربي':'English',
+      opts.goal==='study'?'مذاكرة':'مراجعة',
+      opts.pace==='fast'?'⏱️ مكثف':''
+    ].filter(Boolean).join(' · ');
+    sendMessage(opts.lang==='ar' ? 'السلام عليكم، أنا جاهز نبدأ.' : "Hi, I'm ready to start.", true);
+  }catch(err){$('uploadStatus').textContent='⚠️ '+err.message}
+}
+
+function renderTopics(currentIdx){
+  const list=$('topicList'); list.innerHTML='';
+  topics.forEach((t,i)=>{
+    const li=document.createElement('li'); const n=i+1;
+    let mark='';
+    if(covered.has(n)){li.classList.add('covered');mark='✓'}
+    else if(weak.has(n)){li.classList.add('weak');mark='!'}
+    if(currentIdx===n&&!covered.has(n))li.classList.add('current');
+    li.innerHTML=`<span class="railCell"><span class="dot">${mark}</span><span class="rail"></span></span><span class="tName" dir="auto">${t.name}</span>`;
+    list.appendChild(li);
+  });
+  const p=topics.length?Math.round(covered.size/topics.length*100):0;
+  $('progressBar').style.width=p+'%'; $('pct').textContent=p+'%';
+  $('progressLabel').textContent=`${covered.size} من ${topics.length} محطات مُتقنة`+(weak.size?` — ${weak.size} تحتاج تقوية`:'');
+  const cur=list.querySelector('.current');
+  if(cur)cur.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function addMessage(text,who){
+  const row=document.createElement('div'); row.className='row '+who;
+  const msg=document.createElement('div'); msg.className='msg'; msg.setAttribute('dir','auto');
+  if(who==='bot'){
+    row.innerHTML='<span class="avatar">ف</span>';
+    const wrap=document.createElement('div'); wrap.className='bubbleWrap';
+    msg.innerHTML=marked.parse(text);
+    renderMathInElement(msg,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});
+    msg.querySelectorAll('pre code.language-mermaid').forEach(async(block,i)=>{
+      const w=document.createElement('div'); w.className='mermaid';
+      try{const{svg}=await mermaid.render('mm'+Date.now()+i,block.textContent);
+        w.innerHTML=svg; block.closest('pre').replaceWith(w);}catch(e){}
+    });
+    wrap.appendChild(msg);
+    if(!examMode){
+      const swap=document.createElement('button'); swap.className='swapBtn';
+      swap.textContent = opts.lang==='ar' ? '🔁 Show this in English' : '🔁 ورني إياها بالعربي';
+      swap.onclick=()=>{
+        swap.disabled=true;
+        sendMessage(opts.lang==='ar'
+          ? 'أعد عرض شرح نفس النقطة الحالية بالإنجليزية كعرض موازٍ، بدون تغيير تقدمي.'
+          : 'Re-present the current point\'s explanation in Arabic as a parallel view, without changing my progress.', true);
+      };
+      wrap.appendChild(swap);
+    }
+    row.appendChild(wrap);
+  }else{row.appendChild(msg); msg.textContent=text;}
+  $('messages').appendChild(row);
+  $('messages').scrollTop=$('messages').scrollHeight;
+}
+
+function addCard(cls,head,text){
+  const div=document.createElement('div'); div.className=cls;
+  const span=document.createElement('span'); span.setAttribute('dir','auto'); span.textContent=text;
+  div.innerHTML='<b>'+head+'</b>'; div.appendChild(span);
+  $('messages').appendChild(div);
+  $('messages').scrollTop=$('messages').scrollHeight;
+}
+
+function bumpBadge(){
+  const total=insights.tips.length+insights.gaps.length+insights.events.length;
+  const b=$('insightsBadge');
+  if(total>0){b.style.display='grid';b.textContent=total}
+}
+
+function addReport(r){
+  insights.report=r;
+  const div=document.createElement('div'); div.className='reportCard';
+  const ready=Math.max(0,Math.min(100,Math.round(r.readiness||0)));
+  div.innerHTML=`<h3>📋 تقرير الجاهزية</h3>
+    <span class="readyNum">${ready}%</span>
+    <div class="readyBarWrap"><div class="readyBar" style="width:0%"></div></div>
+    <div class="cols">
+      <div class="strong"><b>نقاط قوتك</b><span dir="auto">${(r.strong||[]).map(s=>'• '+s).join('<br>')||'—'}</span></div>
+      <div class="weakC"><b>تحتاج مراجعة</b><span dir="auto">${(r.weak||[]).map(s=>'• '+s).join('<br>')||'—'}</span></div>
+    </div>
+    <div class="advice" dir="auto">💡 ${r.advice||''}</div>`;
+  $('messages').appendChild(div);
+  requestAnimationFrame(()=>div.querySelector('.readyBar').style.width=ready+'%');
+  $('messages').scrollTop=$('messages').scrollHeight;
+}
+
+function refreshInsights(){
+  const li=a=>'<ul>'+a.map(x=>`<li dir="auto">${x}</li>`).join('')+'</ul>';
+  if(insights.style)$('iStyle').innerHTML=`<span dir="auto">${insights.style}</span>`;
+  if(insights.tips.length)$('iTips').innerHTML=li(insights.tips);
+  if(insights.gaps.length)$('iGaps').innerHTML=li(insights.gaps);
+  if(insights.events.length)$('iEvents').innerHTML=li(insights.events);
+  const wNames=[...weak].map(n=>topics[n-1]?.name).filter(Boolean);
+  $('iWeak').innerHTML=wNames.length?li(wNames):'<span class="empty">لا يوجد</span>';
+  if(insights.report){
+    const r=insights.report;
+    $('iReport').innerHTML=`<span class="bigStat">${Math.round(r.readiness||0)}%</span><br><span dir="auto" style="font-size:13px;color:var(--muted)">${r.advice||''}</span>`;
+  }
+  bumpBadge();
+}
+
+async function sendMessage(text,hidden=false){
+  if(!text.trim()||!courseId)return;
+  if(!hidden)addMessage(text,'user');
+  $('inputBox').value=''; $('sendBtn').disabled=true; $('typing').classList.add('show');
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:uid,course_id:courseId,message:text})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'حدث خطأ');
+    const pr=data.progress;
+    if(pr&&pr.alert){addCard('gapAlert','🔍 فجوة معرفية مكتشفة',pr.alert)}
+    addMessage(data.reply,'bot');
+    if(pr&&pr.tip){addCard('tipCard','💡 نصيحة للاختبار — انحفظت في ملفك',pr.tip)}
+    if(data.report)addReport(data.report);
+    covered=new Set(data.covered||[...covered]);
+    weak=new Set(data.weak||[...weak]);
+    if(data.insights)insights=data.insights;
+    renderTopics(pr?pr.current:undefined);
+    refreshInsights();
+  }catch(err){addMessage('⚠️ '+err.message,'bot')}
+  finally{$('sendBtn').disabled=false;$('typing').classList.remove('show');$('inputBox').focus()}
+}
+
+$('insightsBtn').onclick=()=>{refreshInsights();$('overlay').classList.add('show')};
+$('closeBtn').onclick=()=>$('overlay').classList.remove('show');
+$('overlay').onclick=e=>{if(e.target.id==='overlay')$('overlay').classList.remove('show')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')$('overlay').classList.remove('show')});
+
+$('examBtn').onclick=async()=>{
+  if(!courseId||examMode)return;
+  if(!confirm('بعد بدء الاختبار يتحول فاهِم من معلّم إلى ممتحن (10 أسئلة بدون تلميحات). جاهز؟'))return;
+  try{
+    const res=await fetch('/api/exam',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_id:uid,course_id:courseId})});
+    if(!res.ok)throw new Error('تعذر بدء الاختبار');
+    examMode=true; $('examBadge').style.display='inline-block';
+    $('examBtn').disabled=true; $('examBtn').textContent='الاختبار جارٍ…';
+    sendMessage(opts.lang==='ar' ? 'أنا جاهز، ابدأ الاختبار بالسؤال الأول.' : "I'm ready, start the exam.", true);
+  }catch(err){alert(err.message)}
+};
+
+$('sendBtn').onclick=()=>sendMessage($('inputBox').value);
+$('inputBox').onkeydown=e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage($('inputBox').value)}
+};
+
+/* ============ المكتبة والحفظ الدائم ============ */
+function show(screen){
+  $('homeScreen').classList.toggle('active',screen==='home');
+  $('uploadScreen').style.display = screen==='upload' ? 'flex' : 'none';
+  $('appScreen').classList.toggle('active',screen==='app');
+}
+
+function enterCourse(state,o){
+  courseId=state.course_id; topics=state.topics;
+  covered=new Set(state.covered||[]); weak=new Set(state.weak||[]);
+  insights=state.insights||{style:null,tips:[],gaps:[],events:[],report:null};
+  examMode=state.mode==='exam';
+  if(o)opts={...opts,...o}; if(state.lang)opts.lang=state.lang;
+  $('materialTitle').textContent=state.title;
+  $('modeTag').textContent=opts.lang==='ar'?'عربي':'English';
+  $('examBadge').style.display=examMode?'inline-block':'none';
+  $('examBtn').disabled=examMode;
+  $('examBtn').textContent=examMode?'الاختبار جارٍ…':'🎯 اختبر جاهزيتي';
+  $('messages').innerHTML='';
+  (state.display||[]).forEach(e=>{
+    if(e.t==='user')addMessage(e.x,'user');
+    else if(e.t==='bot')addMessage(e.x,'bot');
+    else if(e.t==='tip')addCard('tipCard','💡 نصيحة للاختبار',e.x);
+    else if(e.t==='gap')addCard('gapAlert','🔍 فجوة معرفية مكتشفة',e.x);
+    else if(e.t==='report')addReport(e.x);
+  });
+  renderTopics(); refreshInsights();
+  show('app');
+  $('messages').scrollTop=$('messages').scrollHeight;
+}
+
+async function openCourse(cid){
+  try{
+    const res=await fetch(`/api/course?user_id=${uid}&course_id=${cid}`);
+    const state=await res.json();
+    if(!res.ok)throw new Error(state.detail||'تعذر فتح الشابتر');
+    enterCourse(state);
+  }catch(err){alert(err.message)}
+}
+
+async function deleteCourse(cid,ev){
+  ev.stopPropagation();
+  if(!confirm('متأكد تبغى تحذف هذا الشابتر؟ تقدمه وملفه بينمسحون نهائياً.'))return;
+  await fetch('/api/course/delete',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({user_id:uid,course_id:cid})});
+  loadLibrary();
+
+}
+
+async function loadLibrary(){
+  try{
+    const res=await fetch(`/api/courses?user_id=${uid}`);
+    const data=await res.json();
+    const courses=data.courses||[];
+    if(!courses.length){show('upload');$('backHome').style.display='none';return}
+    const grid=$('courseGrid'); grid.innerHTML='';
+    courses.forEach(c=>{
+      const card=document.createElement('div'); card.className='courseCard';
+      card.onclick=()=>openCourse(c.course_id);
+      card.innerHTML=`
+        <button class="delBtn" title="حذف">🗑</button>
+        <div class="cTitle" dir="auto">${c.title}</div>
+        <div class="cBarWrap"><div class="cBar" style="width:${c.progress}%"></div></div>
+        <div class="cMeta">${c.progress}% مُتقن · ${c.topics_count} نقطة${c.mode==='exam'?' · 🎯 في وضع الاختبار':''}</div>`;
+      card.querySelector('.delBtn').onclick=e=>deleteCourse(c.course_id,e);
+      grid.appendChild(card);
+    });
+    $('backHome').style.display='inline-block';
+    show('home');
+  }catch(err){show('upload')}
+}
+
+$('newCourseBtn').onclick=()=>show('upload');
+$('backHome').onclick=()=>loadLibrary();
+$('toLibBtn').onclick=()=>loadLibrary();
+loadLibrary();
+
+</script>
+</body>
+</html>

@@ -199,7 +199,7 @@ class CourseRef(BaseModel):
     course_id: str
 
 
-def _call_claude(messages, system=None, max_tokens=MAX_TOKENS):
+def _call_llm(messages, system=None, max_tokens=MAX_TOKENS):
     try:
         response = client.messages.create(
             model=MODEL, max_tokens=max_tokens,
@@ -207,7 +207,7 @@ def _call_claude(messages, system=None, max_tokens=MAX_TOKENS):
             messages=messages,
         )
     except anthropic.APIError as e:
-        raise HTTPException(status_code=502, detail=f"خطأ من واجهة Claude: {e}")
+        raise HTTPException(status_code=502, detail=f"خطأ من واجهة النموذج: {e}")
     return "".join(b.text for b in response.content if b.type == "text")
 
 
@@ -311,7 +311,7 @@ async def upload(file: UploadFile = File(...), lang: str = Form("ar"),
     else:
         raise HTTPException(status_code=400, detail="الملفات المدعومة: PDF أو TXT أو MD")
 
-    raw = _call_claude(
+    raw = _call_llm(
         [{"role": "user", "content": [document_block, {"type": "text", "text": EXTRACT_PROMPTS[lang]}]}],
         max_tokens=2500,
     ).replace("```json", "").replace("```", "").strip()
@@ -391,7 +391,7 @@ def chat(req: ChatRequest):
     else:
         system = EXAM_PROMPT + LANG_DIRECTIVES[course.get("lang", "ar")]
 
-    reply = _call_claude(course["history"], system=system)
+    reply = _call_llm(course["history"], system=system)
     course["history"].append({"role": "assistant", "content": reply})
     course["message_count"] += 1
 

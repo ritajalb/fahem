@@ -27,7 +27,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 Then open http://localhost:8000. The API key stays on the server and never reaches the browser.
 
-**Tech:** Python · FastAPI · Anthropic Claude API · HTML/JS frontend (RTL Arabic)
+**Tech:** Python · FastAPI · Anthropic LLM API · HTML/JS frontend (RTL Arabic)
 
 **Author:** Ritaj Albogami — built during the Tuwaiq Academy AI & Data Science Diploma, 2026.
 
@@ -80,7 +80,6 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 - المفتاح في السيرفر فقط (Secrets في Railway/Render) — لا يصل للمتصفح أبداً.
 - الجلسات في الذاكرة؛ للإنتاج الجاد استبدلها بـ Redis.
-- المنتج باسمك الخاص مع "Powered by Claude" — لا يُقدَّم كمنتج من Anthropic.
 
 ## الحفظ الدائم (v5)
 
